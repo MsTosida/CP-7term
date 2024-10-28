@@ -22,7 +22,6 @@ app.post("/encrypt", (req, res) => {
     const encryptedTextXXTEA = encrypt(req.body.enc_text, req.body.key);
     const buffer = util.createBuffer(encryptedTextXXTEA);
     const resultXXTEA = util.encode64(buffer.getBytes());
-    console.log(resultXXTEA);
     
     let endTime = performance.now();
     const encodingTimeXXTEA = (endTime - startTime).toFixed(4);
