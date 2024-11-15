@@ -18,6 +18,7 @@
     "convert-hex": "^0.1.0",
     "crypto": "^1.0.1",
     "crypto-js": "^4.2.0",
+    "detect-file-encoding-and-language": "^2.4.0",
     "ejs": "^3.1.9",
     "express": "^4.19.2",
     "hex-to-binary": "^1.0.1",

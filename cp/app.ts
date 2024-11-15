@@ -2,9 +2,12 @@ import express from 'express';
 import {decrypt, encrypt} from "./xxtea";
 import {encryptData, decryptData} from "./cast";
 import {util} from "node-forge";
-import * as crypto from "crypto";
 const { performance } = require('perf_hooks');
+import * as fs from "fs";
+import path from "path";
 
+
+import languageEncoding from "detect-file-encoding-and-language"
 
 const app = express();
 
@@ -17,6 +20,8 @@ app.get("/", (req, res) => {
 });
 
 app.post("/encrypt", (req, res) => {
+
+    
     let startTime = performance.now();
 
     const encryptedTextXXTEA = encrypt(req.body.enc_text, req.body.key);
