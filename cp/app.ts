@@ -1,33 +1,97 @@
 import express from 'express';
-import {decrypt, encrypt} from "./xxtea";
-import {encryptData, decryptData} from "./cast";
-import {util} from "node-forge";
+import { Request, Response } from 'express';
+import { decrypt, encrypt } from "./xxtea";
+import { encryptData, decryptData } from "./cast";
+import { util } from "node-forge";
 const { performance } = require('perf_hooks');
-import * as fs from "fs";
-import path from "path";
-
-
-import languageEncoding from "detect-file-encoding-and-language"
+const fs = require('fs').promises;
+import * as crypto from "crypto";
 
 const app = express();
 
 app.use(express.json());
-app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
 
 app.get("/", (req, res) => {
     res.render('cp');
 });
 
+app.get("/time", async (req: Request, res: Response) => {
+    const files = [
+        'files/text_10.txt',
+        'files/text_100.txt',
+        'files/text_500.txt',
+        'files/text_1000.txt',
+        'files/text_2000.txt'
+    ];
+    const encryptedFilesXXTEA = [
+        'files/encX_text_10.txt',
+        'files/encX_text_100.txt',
+        'files/encX_text_500.txt',
+        'files/encX_text_1000.txt',
+        'files/encX_text_2000.txt'
+    ];
+
+    const encryptedFilesCAST = [
+        'files/encC_text_10.txt',
+        'files/encC_text_100.txt',
+        'files/encC_text_500.txt',
+        'files/encC_text_1000.txt',
+        'files/encC_text_2000.txt'
+    ];
+
+    const encryptionTimesXXTEA = [];
+    const decryptionTimesXXTEA = [];
+    const encryptionTimesCAST = [];
+    const decryptionTimesCAST = [];
+    const key = crypto.randomBytes(16);
+
+    for (let i = 0; i < files.length; i++) {
+        const text = (await fs.readFile(files[i])).toString('utf-8');
+
+        // Шифрование XXTEA
+        const startEncryptXXTEA = process.hrtime();
+        const encryptedTextXXTEA = await encrypt(text, key.toString());
+        await fs.writeFile(encryptedFilesXXTEA[i], encryptedTextXXTEA);
+        const endEncryptXXTEA = process.hrtime(startEncryptXXTEA);
+        encryptionTimesXXTEA.push(endEncryptXXTEA[0] * 1000 + endEncryptXXTEA[1] / 1000000);
+
+        // Расшифрование XXTEA
+        const startDecryptXXTEA = process.hrtime();
+        const decryptedTextXXTEA = await decrypt(encryptedTextXXTEA, key.toString());
+        const endDecryptXXTEA = process.hrtime(startDecryptXXTEA);
+        decryptionTimesXXTEA.push(endDecryptXXTEA[0] * 1000 + endDecryptXXTEA[1] / 1000000);
+
+        // Шифрование CAST
+        const startEncryptCAST = process.hrtime();
+        const encryptedTextCAST = await encryptData(text, key.toString());
+        await fs.writeFile(encryptedFilesCAST[i], encryptedTextCAST);
+        const endEncryptCAST = process.hrtime(startEncryptCAST);
+        encryptionTimesCAST.push(endEncryptCAST[0] * 1000 + endEncryptCAST[1] / 1000000);
+
+        // Расшифрование CAST
+        const startDecryptCAST = process.hrtime();
+        const decryptedTextCAST = await decryptData(encryptedTextCAST, key.toString());
+        const endDecryptCAST = process.hrtime(startDecryptCAST);
+        decryptionTimesCAST.push(endDecryptCAST[0] * 1000 + endDecryptCAST[1] / 1000000);
+
+    }
+
+    res.render('time', {
+        encryptionTimesXXTEA,
+        decryptionTimesXXTEA,
+        encryptionTimesCAST,
+        decryptionTimesCAST
+    });
+});
+
 app.post("/encrypt", (req, res) => {
-
-    
     let startTime = performance.now();
-
     const encryptedTextXXTEA = encrypt(req.body.enc_text, req.body.key);
     const buffer = util.createBuffer(encryptedTextXXTEA);
     const resultXXTEA = util.encode64(buffer.getBytes());
-    
+
     let endTime = performance.now();
     const encodingTimeXXTEA = (endTime - startTime).toFixed(4);
 

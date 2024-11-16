@@ -10,102 +10,265 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            border: 2px solid black; /* Граница таблицы */
-            margin: 20px 0; /* Внешние отступы */
+            margin: 20px 0;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid black;
             padding: 8px;
-            text-align: left;
-            vertical-align: top;
-            width: 50%; /* Ширина столбцов */
+            text-align: center;
         }
+
         th {
             background-color: #f2f2f2;
+        }
+
+        canvas {
+            width: 800px;
+            height: 400px;
+            margin: 0 auto;
         }
     </style>
 </head>
 
 <body>
-    <h4 class="text-center mt-4 mb-4">Сравнительный анализ производительности и безопасности симметричных алгоритмов
-        шифрования XXTEA и CAST</h4>
+    <ul class="nav justify-content-center mt-4">
+        <li class="nav-item">
+            <a class="nav-link active" href="/">CP</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/time">Тime</a>
+        </li>
+    </ul>
+    <h4 class="text-center mt-4 mb-4">Время работы симметричных алгоритмов шифрования XXTEA и CAST на разных размерах
+        файлов</h4>
     <main>
-        <div class="container w-25">
-            <form class="w-full" id="enc_form">
-                <div class="form-group">
-                    <label for="text">Оригинальное сообщение</label>
-                    <input type="text" name="enc_text" class="form-control" required id="text">
-                </div>
-                <div class="form-group">
-                    <label for="key">Ключ</label>
-                    <input type="text" name="key" class="form-control" required id="key">
-                </div>
-                <button type="submit" class="btn btn-primary">Зашифровать</button>
-            </form>
-        </div>
-        <div id="encResult" class="container w-600"></div>
-    </main>
-    <script type="text/javascript">
-        let form = document.getElementById('enc_form');
-
-        form.onsubmit = async (event) => {
-            event.preventDefault();
-
-            const formData = new FormData(form);
-            let jsonRequestData = {};
-
-            for (let [key, value] of formData) {
-                jsonRequestData[key] = value;
-            }
-
-            fetch('/encrypt', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(jsonRequestData)
-            }).then(async (res) => {
-                let paragraph = document.getElementById('encResult');
-
-                if (res.status === 200) {
-                    let result = await res.json();
-
-                    paragraph.innerHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                        <th><h3 class="text-center mt-4">XXTEA</h3></th>
-                        <th><h3 class="text-center mt-4">CAST</h3></th>
-                        </tr>
-                    </thead>
+        <div class="container" id="timeResult">
+            <h5 class="text-center">XXTEA</h5>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Размер файла (кб)</th>
+                        <th>Время зашифрования (мс)</th>
+                        <th>Время расшифрования (мс)</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
-                        <td style="word-break: break-all; word-wrap: break-word;">
-                                <h5 class="text-center mt-4">Зашифрование (${result.encodingTimeXXTEA} мс)</h5>
-                                <p>${result.encryptedXXTEA} </p>                          
+                        <td>10</td>
+                        <td>
+                            <%= encryptionTimesXXTEA[0] %>
                         </td>
-                        <td style="word-break: break-all; word-wrap: break-word;"> 
-                                <h5 class="text-center mt-4">Зашифрование (${result.encodingTimeCAST} мс)</h5>
-                                <p>${result.encryptedCAST} </p>
+                        <td>
+                            <%= decryptionTimesXXTEA[0] %>
                         </td>
                     </tr>
                     <tr>
-                        <td style="word-break: break-all; word-wrap: break-word;">
-                                <h5 class="text-center mt-4">Расшифрование (${result.decodingTimeXXTEA} мс)</h5>
-                                <p>${result.decryptedXXTEA} </p>                        
+                        <td>100</td>
+                        <td>
+                            <%= encryptionTimesXXTEA[1] %>
                         </td>
-                        <td style="word-break: break-all; word-wrap: break-word;">
-                                <h5 class="text-center mt-4">Расшифрование (${result.decodingTimeCAST} мс)</h5>
-                                <p>${result.decryptedCAST}</p>
+                        <td>
+                            <%= decryptionTimesXXTEA[1] %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>500</td>
+                        <td>
+                            <%= encryptionTimesXXTEA[2] %>
+                        </td>
+                        <td>
+                            <%= decryptionTimesXXTEA[2] %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>1000</td>
+                        <td>
+                            <%= encryptionTimesXXTEA[3] %>
+                        </td>
+                        <td>
+                            <%= decryptionTimesXXTEA[3] %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2000</td>
+                        <td>
+                            <%= encryptionTimesXXTEA[4] %>
+                        </td>
+                        <td>
+                            <%= decryptionTimesXXTEA[4] %>
                         </td>
                     </tr>
                 </tbody>
-                </table>`;
-                } else {
-                    paragraph.innerHTML = "Произошла ошибка"
+            </table>
+            <div id="encryptionTimesXXTEA" data-values="<%= encryptionTimesXXTEA.join(', ') %>"></div>
+            <div id="decryptionTimesXXTEA" data-values="<%= decryptionTimesXXTEA.join(', ') %>"></div>
+            <canvas id="xxteaChart"></canvas>
+
+            <h5 class="text-center" style="padding-top: 50px;">CAST</h5>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Размер файла (кб)</th>
+                        <th>Время зашифрования (мс)</th>
+                        <th>Время расшифрования (мс)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>10</td>
+                        <td>
+                            <%= encryptionTimesCAST[0] %>
+                        </td>
+                        <td>
+                            <%= decryptionTimesCAST[0] %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>100</td>
+                        <td>
+                            <%= encryptionTimesCAST[1] %>
+                        </td>
+                        <td>
+                            <%= decryptionTimesCAST[1] %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>500</td>
+                        <td>
+                            <%= encryptionTimesCAST[2] %>
+                        </td>
+                        <td>
+                            <%= decryptionTimesCAST[2] %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>1000</td>
+                        <td>
+                            <%= encryptionTimesCAST[3] %>
+                        </td>
+                        <td>
+                            <%= decryptionTimesCAST[3] %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2000</td>
+                        <td>
+                            <%= encryptionTimesCAST[4] %>
+                        </td>
+                        <td>
+                            <%= decryptionTimesCAST[4] %>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div id="encryptionTimesCAST" data-values="<%= encryptionTimesCAST.join(', ') %>"></div>
+            <div id="decryptionTimesCAST" data-values="<%= decryptionTimesCAST.join(', ') %>"></div>
+
+            <canvas id="castChart"></canvas>
+
+
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Данные для графиков
+        const fileSizes = [10, 100, 500, 1000, 2000];
+
+        // XXTEA
+        const encryptionTimesXXTEA = document.getElementById('encryptionTimesXXTEA').getAttribute('data-values').split(', ');
+        const decryptionTimesXXTEA = document.getElementById('decryptionTimesXXTEA').getAttribute('data-values').split(', ');
+
+
+        const xxteaCtx = document.getElementById('xxteaChart').getContext('2d');
+        new Chart(xxteaCtx, {
+            type: 'line',
+            data: {
+                labels: fileSizes,
+                datasets: [
+                    {
+                        label: 'Время зашифрования XXTEA (мс)',
+                        data: encryptionTimesXXTEA,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        fill: false,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Время расшифрования XXTEA (мс)',
+                        data: decryptionTimesXXTEA,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        fill: false,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Размер файла (кб)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Время (мс)',
+                            beginAtZero: true
+                        }
+                    }
                 }
-            })
-        }
+            }
+        });
+
+        // CAST
+        const encryptionTimesCAST = document.getElementById('encryptionTimesCAST').getAttribute('data-values').split(', ');
+        const decryptionTimesCAST = document.getElementById('decryptionTimesCAST').getAttribute('data-values').split(', ');
+
+
+        const castCtx = document.getElementById('castChart').getContext('2d');
+        new Chart(castCtx, {
+            type: 'line',
+            data: {
+                labels: fileSizes,
+                datasets: [
+                    {
+                        label: 'Время зашифрования CAST (мс)',
+                        data: encryptionTimesCAST,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        fill: false,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Время расшифрования CAST (мс)',
+                        data: decryptionTimesCAST,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        fill: false,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Размер файла (кб)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Время (мс)',
+                            beginAtZero: true
+                        }
+                    }
+                }
+            }
+        });
     </script>
 </body>
 
