@@ -53,8 +53,10 @@ app.get("/time", async (req: Request, res: Response) => {
         // Шифрование XXTEA
         const startEncryptXXTEA = process.hrtime();
         const encryptedTextXXTEA = await encrypt(text, key.toString());
-        await fs.writeFile(encryptedFilesXXTEA[i], encryptedTextXXTEA);
         const endEncryptXXTEA = process.hrtime(startEncryptXXTEA);
+        const buffer = util.createBuffer(encryptedTextXXTEA);
+        const resultXXTEA = util.bytesToHex(buffer.bytes());
+        await fs.writeFile(encryptedFilesXXTEA[i], resultXXTEA);
         encryptionTimesXXTEA.push(endEncryptXXTEA[0] * 1000 + endEncryptXXTEA[1] / 1000000);
 
         // Расшифрование XXTEA
@@ -65,9 +67,11 @@ app.get("/time", async (req: Request, res: Response) => {
 
         // Шифрование CAST
         const startEncryptCAST = process.hrtime();
-        const encryptedTextCAST = await encryptData(text, key.toString());
-        await fs.writeFile(encryptedFilesCAST[i], encryptedTextCAST);
+        const encryptedTextCAST = await encryptData(text, key.toString()); 
         const endEncryptCAST = process.hrtime(startEncryptCAST);
+        const parts = encryptedTextCAST.split(':');
+        const encryptedText = parts[1]; 
+        await fs.writeFile(encryptedFilesCAST[i], encryptedText);
         encryptionTimesCAST.push(endEncryptCAST[0] * 1000 + endEncryptCAST[1] / 1000000);
 
         // Расшифрование CAST
@@ -90,7 +94,8 @@ app.post("/encrypt", (req, res) => {
     let startTime = performance.now();
     const encryptedTextXXTEA = encrypt(req.body.enc_text, req.body.key);
     const buffer = util.createBuffer(encryptedTextXXTEA);
-    const resultXXTEA = util.encode64(buffer.getBytes());
+    const resultXXTEA = util.bytesToHex(buffer.bytes());
+    
 
     let endTime = performance.now();
     const encodingTimeXXTEA = (endTime - startTime).toFixed(4);
@@ -102,8 +107,10 @@ app.post("/encrypt", (req, res) => {
 
     startTime = performance.now();
     const encryptedTextCAST = encryptData(req.body.enc_text, req.body.key);
-    const bufferr = util.createBuffer(encryptedTextCAST);
-    const resultCAST = util.encode64(bufferr.getBytes());
+    const parts = encryptedTextCAST.split(':');
+    const encryptedText = parts[1]; 
+    //const bufferr = util.createBuffer(encryptedTextCAST);
+    //const resultCAST = util.encode64(bufferr.getBytes());
 
     endTime = performance.now();
     const encodingTimeCAST = (endTime - startTime).toFixed(4);
@@ -120,7 +127,7 @@ app.post("/encrypt", (req, res) => {
         decodingTimeXXTEA: decodingTimeXXTEA,
         encodingTimeXXTEA: encodingTimeXXTEA,
 
-        encryptedCAST: resultCAST,
+        encryptedCAST: encryptedText,
         decryptedCAST: decryptedTextCAST,
         decodingTimeCAST: decodingTimeCAST,
         encodingTimeCAST: encodingTimeCAST

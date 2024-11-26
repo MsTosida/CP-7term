@@ -1,12 +1,11 @@
 import * as crypto from "crypto";
 
 export const encryptData = (data: string, key: string): string => {
-   
     const iv = crypto.randomBytes(8); 
     const cipher = crypto.createCipheriv('cast', Buffer.from(key), iv);
     let encrypted = cipher.update(data, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+    console.log(typeof(encrypted));
     return iv.toString('hex') + ':' + encrypted;
 }
 

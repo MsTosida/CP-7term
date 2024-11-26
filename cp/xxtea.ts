@@ -3,6 +3,7 @@ import {util} from "node-forge";
 
 export const encrypt = (msg: string, key: string) => {
     var encrypt_data = xxtea.encrypt(xxtea.toBytes(msg), xxtea.toBytes(key));
+    console.log(typeof(encrypt_data));
     return encrypt_data; 
 };
 
